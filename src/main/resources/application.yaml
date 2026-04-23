@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: wf-orchestrator
+
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/flowmind
+    username: postgres
+    password: example
+    pool:
+      initial-size: 5
+      max-size: 20
+
+    # Flyway garde sa config JDBC séparée
+  flyway:
+    url: jdbc:postgresql://localhost:5432/flowmind
+    user: postgres
+    password: example
+    locations: classpath:db/migration
+    enabled: true
+
+ai:
+ ollama:
+  base-url: http://localhost:11434
+  model: qwen3:8b
+
+server:
+  port: 8080

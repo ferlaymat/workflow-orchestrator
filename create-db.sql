@@ -1,0 +1,2 @@
+DROP DATABASE IF EXISTS flowmind;
+CREATE DATABASE flowmind;
