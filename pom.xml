@@ -65,7 +65,7 @@
 		</dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-ollama</artifactId>
+            <artifactId>spring-ai-starter-model-ollama</artifactId>
         </dependency>
 
         <dependency>

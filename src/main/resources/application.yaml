@@ -18,10 +18,11 @@ spring:
     locations: classpath:db/migration
     enabled: true
 
-ai:
- ollama:
-  base-url: http://localhost:11434
-  model: qwen3:8b
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: qwen3:8b
 
 server:
   port: 8080

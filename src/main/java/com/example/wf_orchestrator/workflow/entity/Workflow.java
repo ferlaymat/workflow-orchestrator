@@ -1,7 +1,7 @@
-package com.example.wf_orchestrator.entity;
+package com.example.wf_orchestrator.workflow.entity;
 
 
-import com.example.wf_orchestrator.type.WorkflowStatus;
+import com.example.wf_orchestrator.workflow.type.WorkflowStatus;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
