@@ -1,6 +1,7 @@
 package com.example.wf_orchestrator.workflow.engine;
 
 import com.example.wf_orchestrator.workflow.dto.ExecutionEvent;
+import com.example.wf_orchestrator.workflow.dto.WorkflowResponse;
 import com.example.wf_orchestrator.workflow.entity.Workflow;
 import com.example.wf_orchestrator.workflow.entity.WorkflowExecution;
 import com.example.wf_orchestrator.workflow.model.ExecutionContext;
@@ -31,12 +32,13 @@ public class WorkflowEngine {
     private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public Flux<ExecutionEvent> execute(Workflow workflow, Map<String, Object> inputs) {
-        var execution = createExecution(workflow);
-        var graph = parseGraph(workflow.getGraphJson());
+    public Flux<ExecutionEvent> execute(WorkflowResponse workflowResponse, String inputs) {
+        Map<String, Object> mapInput = parseInputs(inputs);
+        var execution = createExecution(workflowResponse);
+        var graph = workflowResponse.graph();
 
         return Flux.fromIterable(topologicalSort(graph.steps(), graph.edges()))
-                .concatMap(step -> executeStep(step, execution, inputs))
+                .concatMap(step -> executeStep(step, execution, mapInput))
                 .doOnComplete(() -> finalizeExecution(execution, ExecutionStatus.SUCCESS))
                 .doOnError(e -> finalizeExecution(execution, ExecutionStatus.FAILED));
     }
@@ -65,20 +67,16 @@ public class WorkflowEngine {
      * initialize to RUNNING
      * create empty JSON
      */
-    private WorkflowExecution createExecution(Workflow workflow) {
+    private WorkflowExecution createExecution(WorkflowResponse workflowResponse) {
         return WorkflowExecution.builder()
                 .id(UUID.randomUUID().toString())
-                .workflowId(workflow.getId())
+                .workflowId(workflowResponse.id())
                 .status(ExecutionStatus.RUNNING)
                 .stepsLog("{}")
                 .startedAt(Instant.now())
                 .build();
     }
 
-    //deserialize stored JSON into workflow graph
-    private WorkflowGraph parseGraph(String graphJson) {
-        return objectMapper.readValue(graphJson, WorkflowGraph.class);
-    }
 
     private List<WorkflowStep> topologicalSort(List<WorkflowStep> steps,
                                                List<WorkflowEdge> edges) {
@@ -176,6 +174,16 @@ public class WorkflowEngine {
         // update the execution object with updated log
         execution.setStepsLog(objectMapper.writeValueAsString(logs));
 
+    }
+
+    private Map<String, Object> parseInputs(String inputs) {
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().readValue(inputs, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+            });
+        } catch (Exception e) {
+            log.warn("Failed to parse inputs, using empty map: {}", e.getMessage());
+            return Map.of();
+        }
     }
 
 }
